@@ -1,0 +1,24 @@
+{
+  "name": "property-analytics-engine",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "glob": "^13.0.6",
+    "minimatch": "^10.2.2",
+    "opossum": "^9.0.0",
+    "redis": "^5.11.0",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.0.1"
+  }
+}
