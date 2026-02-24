@@ -1,6 +1,6 @@
 const app = require('./src/app');
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-    console.log(`[Guardian Service] Running on port ${PORT}`);
+app.listen(port, () => {
+    console.log(`[Server] Listening on port ${port}`);
 });
