@@ -2,6 +2,11 @@ const test = require('node:test');
 const assert = require('node:assert');
 const request = require('supertest'); // Used only to trigger the HTTP calls in tests
 const app = require('../../../app');
+const { connectRedis, closeRedisConnection } = require('../../../infra/redisClient');
+
+test.before(async () => {
+    await connectRedis();
+});
 
 test('GET /api/v1/properties - success case', async (t) => {
     const response = await request(app).get('/api/v1/properties');
@@ -10,5 +15,9 @@ test('GET /api/v1/properties - success case', async (t) => {
     assert.strictEqual(response.status, 200);
     assert.strictEqual(response.body.version, 'v1');
     assert.strictEqual(response.body.status, 'active');
+});
+
+test.after(async () => {
+    await closeRedisConnection();
 });
 

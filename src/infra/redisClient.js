@@ -13,4 +13,11 @@ async function connectRedis() {
     }
 }
 
-module.exports = { client, connectRedis };
+async function closeRedisConnection() {
+    if (client.isOpen) {
+        await client.quit();
+        console.log('[Infra] Disconnected from Redis');
+    }
+}
+
+module.exports = { client, connectRedis, closeRedisConnection };
