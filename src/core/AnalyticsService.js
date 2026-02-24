@@ -1,39 +1,33 @@
 const CircuitBreaker = require('opossum');
 const { client } = require('../infra/redisClient');
+const logger = require('../infra/logger'); // Import logger
 
 class AnalyticsService {
     constructor() {
-        const options = {
-            timeout: 3000, // If the action takes longer than 3s, fail
-            errorThresholdPercentage: 50, // Fail if 50% of requests error
-            resetTimeout: 10000 // Wait 10s before trying again
-        };
-
+        const options = { timeout: 3000, errorThresholdPercentage: 50, resetTimeout: 10000 };
         this.breaker = new CircuitBreaker(this.incrementCounter.bind(this), options);
         
-        // Fallback: What to do when the circuit is OPEN (Redis is down)
-        this.breaker.fallback(() => ({ 
-            totalViews: 'N/A', 
-            status: 'degraded',
-            message: 'Service is temporarily serving stale data'
-        }));
+        // Performance Tracking & Observability
+        this.breaker.on('fallback', (result) => logger.warn('Circuit Breaker Fallback Triggered', { result }));
+        this.breaker.on('open', () => logger.error('Circuit Breaker OPEN: Redis is failing'));
+        this.breaker.on('halfOpen', () => logger.info('Circuit Breaker HALF_OPEN: Testing Redis recovery'));
+        this.breaker.on('close', () => logger.info('Circuit Breaker CLOSED: Redis is healthy'));
+
+        this.breaker.fallback(() => ({ totalViews: 'N/A', status: 'degraded' }));
     }
 
     async incrementCounter(propertyId) {
+        const start = performance.now(); // Performance tracking
         const key = `property:${propertyId}:views`;
-        return await client.incr(key);
+        const result = await client.incr(key);
+        const duration = performance.now() - start;
+
+        logger.info('Redis Increment Successful', { propertyId, duration: `${duration.toFixed(2)}ms` });
+        return result;
     }
 
     async trackView(propertyId) {
-        // Execute through the breaker to ensure fault tolerance
-        const result = await this.breaker.fire(propertyId);
-        
-        // Buffer Logic (Simulated SQL Sync)
-        if (typeof result === 'number' && result % 5 === 0) {
-            console.log(`[Database] Batch persisting view #${result} for ${propertyId}`);
-        }
-
-        return result;
+        return await this.breaker.fire(propertyId);
     }
 }
 
