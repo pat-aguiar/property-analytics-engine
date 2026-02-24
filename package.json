@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node --test src/**/*.test.js",
+    "test": "node --test src/**/**/**/*.test.js",
     "start": "node server.js"
   },
   "keywords": [],
@@ -20,6 +20,7 @@
     "winston": "^3.19.0"
   },
   "devDependencies": {
-    "eslint": "^10.0.1"
+    "eslint": "^10.0.1",
+    "supertest": "^7.2.2"
   }
 }
